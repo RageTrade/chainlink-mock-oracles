@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV2V3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV2V3Interface.sol";
 
-contract ChainlinkMockOracle is AggregatorV3Interface {
+contract ChainlinkMockOracle is AggregatorV2V3Interface {
     struct Round {
         int256 answer;
         uint256 startedAt;
         uint256 updatedAt;
         uint80 answeredInRound;
     }
+
     Round[] _rounds;
     string public description;
     mapping(address => bool) public authorisedDataProviders;
@@ -87,5 +88,30 @@ contract ChainlinkMockOracle is AggregatorV3Interface {
         )
     {
         return getRoundData(uint80(_rounds.length - 1));
+    }
+
+    function latestTimestamp() external view returns (uint256) {
+        return block.timestamp;
+    }
+
+    function getAnswer(uint256 roundId) external view returns (int256) {
+        return _rounds[roundId].answer;
+    }
+
+    function getTimestamp(uint256 roundId) external view returns (uint256) {
+        return _rounds[roundId].startedAt;
+    }
+
+    function latestAnswer() external view returns (int256) {
+        (, int256 answer, , ,) = getRoundData(uint80(_rounds.length - 1));
+
+        return answer;
+    }
+
+    function latestRound() external view returns (uint256) {
+        uint256 length = _rounds.length;
+        if(length == 0) return 0;
+        
+        return _rounds.length - 1;
     }
 }
